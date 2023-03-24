@@ -2,6 +2,7 @@ import os
 import random
 import re
 import sys
+import copy
 
 DAMPING = 0.85
 SAMPLES = 10000
@@ -83,8 +84,36 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    # init sample
+    all_pages = list(corpus.keys())
+    sample = []
 
+    # starting with a page at random
+    next_page = random.choice(all_pages) 
+    sample.append(next_page)
+
+    # sampling `n` pages according to transition model
+    for i in range(n-1):
+
+        # find probability distribution via transition model 
+        next_distribution = transition_model(corpus, next_page, damping_factor)
+
+        keys = list(next_distribution.keys())
+        values = list(next_distribution.values())
+        # choose next sample based on probability distribution
+        generator = random.choices(keys, weights=values, k=1)
+        next_page = generator[0]
+        
+
+        sample.append(next_page)
+        
+
+    # init dict and return
+    sample_rank_dict = {}
+    for page in all_pages:
+        sample_rank_dict[page] = sample.count(page)/SAMPLES
+
+    return sample_rank_dict
 
 def iterate_pagerank(corpus, damping_factor):
     """
@@ -95,8 +124,59 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    # init return dict
+    iterate_dict = {}
 
+    # begin by assigning each page a rank of 1 / N
+    all_pages = list(corpus.keys())
+    total_num_pages = len(all_pages)
+    for page in all_pages:
+        iterate_dict[page] = 1/total_num_pages
 
+    # repeatedly calculate new rank until convergence
+    flag = True
+    while flag:
+        
+        # duplicate new value dict
+        new_iterate_dict = copy.deepcopy(iterate_dict)
+        
+        # calculate new rank values
+        for page in all_pages:
+            # With probability 1 - d, chose at random and ended up on page p 
+            new_iterate_dict[page] = (1-damping_factor)/total_num_pages
+            # With probability d, followed a link from a page i to page p.
+            linked_probability = 0 
+            # Find pages link to current page
+            
+            # links_to_current = []
+            # for is_linked_page in all_pages:
+            #     if page in corpus[is_linked_page]:
+            #         links_to_current.append(is_linked_page)
+            
+            links_to_current = [ is_linked_page for is_linked_page in all_pages if page in corpus[is_linked_page] ]
+            # exist page link to current page
+            if links_to_current:
+                for link in links_to_current:
+                    linked_probability += iterate_dict[link]/len(corpus[link])
+            # no links at all = consider as having one link for every page
+            # (including itself).
+            # else:
+            #     linked_probability = 1/len(all_pages)
+            new_iterate_dict[page] += damping_factor*linked_probability
+
+        # Stop condition: all changes <= 0.001
+        for page in all_pages:
+            if abs(new_iterate_dict[page]-iterate_dict[page]) > 0.001:
+                flag =True
+                break
+            else:
+                flag = False
+            
+
+        iterate_dict = copy.deepcopy(new_iterate_dict)
+
+    return iterate_dict
+
+            
 if __name__ == "__main__":
     main()
