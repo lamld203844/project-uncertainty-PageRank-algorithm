@@ -84,34 +84,35 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    # init sample
+    # init return dict
     all_pages = list(corpus.keys())
-    sample = []
+    sample_rank_dict = {}
+    for page in all_pages:
+        sample_rank_dict[page] = 0 
+
+    # sample step
+    step = 1/SAMPLES
 
     # starting with a page at random
     next_page = random.choice(all_pages) 
-    sample.append(next_page)
+    sample_rank_dict[next_page] += step
 
     # sampling `n` pages according to transition model
     for i in range(n-1):
 
         # find probability distribution via transition model 
         next_distribution = transition_model(corpus, next_page, damping_factor)
-
         keys = list(next_distribution.keys())
         values = list(next_distribution.values())
+
         # choose next sample based on probability distribution
         generator = random.choices(keys, weights=values, k=1)
+
+        # update next page
         next_page = generator[0]
         
-
-        sample.append(next_page)
-        
-
-    # init dict and return
-    sample_rank_dict = {}
-    for page in all_pages:
-        sample_rank_dict[page] = sample.count(page)/SAMPLES
+        # update sample rank dict
+        sample_rank_dict[next_page] += step
 
     return sample_rank_dict
 
