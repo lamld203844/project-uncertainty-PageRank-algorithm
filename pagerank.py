@@ -153,21 +153,6 @@ def iterate_pagerank(corpus, damping_factor):
                 if current_page in corpus[is_link_to_current]:
                     linked_probability += iterate_dict[is_link_to_current] / len(corpus[is_link_to_current])
 
-            # # Find pages link to current page
-            # # links_to_current = []
-            # # for is_linked_page in all_pages:
-            # #     if page in corpus[is_linked_page]:
-            # #         links_to_current.append(is_linked_page)
-            # links_to_current = [ is_linked_page for is_linked_page in all_pages if current_page in corpus[is_linked_page] ]
-            # # exist page link to current page
-            # if links_to_current:
-            #     for link in links_to_current:
-            #         linked_probability += iterate_dict[link]/len(corpus[link])
-            # # no links at all = consider as having one link for every page
-            # # (including itself).
-            # # else:
-            # #     linked_probability = 1/len(all_pages)
-
             new_iterate_dict[current_page] += damping_factor*linked_probability
 
         # Stop condition: all changes <= 0.001
@@ -178,7 +163,6 @@ def iterate_pagerank(corpus, damping_factor):
             else:
                 flag = False
             
-
         iterate_dict = copy.deepcopy(new_iterate_dict)
 
     return iterate_dict
