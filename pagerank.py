@@ -142,28 +142,33 @@ def iterate_pagerank(corpus, damping_factor):
         new_iterate_dict = copy.deepcopy(iterate_dict)
         
         # calculate new rank values
-        for page in all_pages:
+        for current_page in all_pages:
             # With probability 1 - d, chose at random and ended up on page p 
-            new_iterate_dict[page] = (1-damping_factor)/total_num_pages
+            new_iterate_dict[current_page] = (1-damping_factor)/total_num_pages
+            
             # With probability d, followed a link from a page i to page p.
             linked_probability = 0 
-            # Find pages link to current page
-            
-            # links_to_current = []
-            # for is_linked_page in all_pages:
-            #     if page in corpus[is_linked_page]:
-            #         links_to_current.append(is_linked_page)
-            
-            links_to_current = [ is_linked_page for is_linked_page in all_pages if page in corpus[is_linked_page] ]
-            # exist page link to current page
-            if links_to_current:
-                for link in links_to_current:
-                    linked_probability += iterate_dict[link]/len(corpus[link])
-            # no links at all = consider as having one link for every page
-            # (including itself).
-            # else:
-            #     linked_probability = 1/len(all_pages)
-            new_iterate_dict[page] += damping_factor*linked_probability
+
+            for is_link_to_current in all_pages:
+                if current_page in corpus[is_link_to_current]:
+                    linked_probability += iterate_dict[is_link_to_current] / len(corpus[is_link_to_current])
+
+            # # Find pages link to current page
+            # # links_to_current = []
+            # # for is_linked_page in all_pages:
+            # #     if page in corpus[is_linked_page]:
+            # #         links_to_current.append(is_linked_page)
+            # links_to_current = [ is_linked_page for is_linked_page in all_pages if current_page in corpus[is_linked_page] ]
+            # # exist page link to current page
+            # if links_to_current:
+            #     for link in links_to_current:
+            #         linked_probability += iterate_dict[link]/len(corpus[link])
+            # # no links at all = consider as having one link for every page
+            # # (including itself).
+            # # else:
+            # #     linked_probability = 1/len(all_pages)
+
+            new_iterate_dict[current_page] += damping_factor*linked_probability
 
         # Stop condition: all changes <= 0.001
         for page in all_pages:
